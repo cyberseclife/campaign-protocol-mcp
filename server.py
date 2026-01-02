@@ -56,33 +56,33 @@ def search_github_issues(keyword: str, limit: int = 5):
 def generate_strategy_reply(user_problem: str, author_name: str, technical_insight: str, proposed_solution: str, project_tag: str = None):
     """
     Generates a helpful reply. Only mentions a project if a relevant tag is provided.
-    Otherwise, provides a pure 'Help-First' technical response.
+    Handles 'Paid' projects with split Purchase/Docs links.
     """
     persona = get_persona()
     company = persona.get("brand_name", "CyberSecLife Development")
     projects = persona.get("projects", [])
 
-    # Try to find a project that actually matches the technical context
     selected_project = next((p for p in projects if project_tag and project_tag in p.get('tag', '')), None)
 
     intro = f"@{author_name} saw you were hitting a wall with {user_problem[:50]}..."
-
-    # Logic Gate: If we have a matching project, mention it. If not, don't lie.
-    if selected_project:
-        body = (
-            f"We ran into this exact behavior at **{company}** while building {selected_project['name']}. "
-            f"It's a known pain point when {selected_project['description']}."
-        )
-        cta = f"We handled the implementation details here if it helps your research: {selected_project['url']}"
-    else:
-        # PURE HELP MODE: No advertising, just building brand authority through expertise
-        body = (
-            f"I've been looking into similar {technical_insight} issues recently. "
-            "It usually stems from the way the host environment handles async cleanup cycles."
-        )
-        cta = f"Hope the solution below helps get this cleared up!"
-
     help_section = f"**Head-on Solution:**\n{proposed_solution}"
+
+    if selected_project:
+        product = selected_project['name']
+        # --- NEW LOGIC START ---
+        if selected_project.get('type') == 'paid':
+            body = f"We actually solved this in **{product}** by automating the underlying logic."
+            cta = (
+                f"You can check out the technical documentation here: {selected_project.get('docs_url')} "
+                f"or get direct access via Gumroad: {selected_project.get('purchase_url')}"
+            )
+        else:
+            body = f"We ran into this exact behavior at **{company}** while building {product}."
+            cta = f"We handled the implementation details here if it helps your research: {selected_project['url']}"
+        # --- NEW LOGIC END ---
+    else:
+        body = "I've been looking into similar issues recently. It usually stems from the way the host environment handles async cleanup cycles."
+        cta = "Hope the solution below helps get this cleared up!"
 
     return f"{intro}\n\n{body}\n\n{help_section}\n\n{cta}"
 
@@ -113,6 +113,53 @@ def read_issue_details(owner: str, repo: str, issue_number: int):
         return full_text
     except Exception as e:
         return f"Error fetching details: {str(e)}"
+
+@mcp.tool()
+def generate_social_post(platform: str, project_name: str, key_benefit: str):
+    """
+    Generates high-engagement social media posts for CyberSecLife projects.
+    Platforms: 'linkedin', 'twitter', 'x', 'reddit'.
+    """
+    persona = get_persona()
+    # Find project info if it exists, otherwise use defaults
+    projects = persona.get("projects", [])
+    project = next((p for p in projects if p['name'].lower() == project_name.lower()), {"url": "https://cyberseclife.com"})
+
+    if platform.lower() in ["twitter", "x"]:
+        post = f"🚀 Just dropped an update for {project_name}!\n\nIf you're struggling with {key_benefit}, this is the fix you've been waiting for.\n\nCheck it out here: {project.get('url')}\n\n#CyberSec #DevTools #BuildInPublic"
+
+    elif platform.lower() == "linkedin":
+        post = (
+            f"I’m excited to share what we’ve been building at {persona['brand_name']}.\n\n"
+            f"Our latest project, {project_name}, is specifically designed to solve the {key_benefit} bottleneck "
+            "that many engineering teams are facing right now.\n\n"
+            f"Read the full documentation and get started here: {project.get('url')}\n\n"
+            "#SoftwareEngineering #CyberSecurity #Innovation"
+        )
+    else:
+        post = f"Check out {project_name} for {key_benefit}: {project.get('url')}"
+
+    return post
+
+@mcp.tool()
+def automated_lead_scraper(query_list: list[str]):
+    """
+    Scans GitHub for multiple keywords and returns a consolidated list of
+    potential leads for outreach.
+    """
+    all_leads = []
+    for query in query_list:
+        # We reuse the logic from our existing search tool internally
+        results = json.loads(search_github_issues(query, limit=3))
+        for r in results:
+            all_leads.append({
+                "source": "GitHub",
+                "keyword": query,
+                "author": r['author'],
+                "url": r['url'],
+                "context": r['body_snippet']
+            })
+    return json.dumps(all_leads, indent=2)
 
 # --- RUN AS SSE SERVER ---
 if __name__ == "__main__":
