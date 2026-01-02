@@ -79,6 +79,34 @@ def generate_strategy_reply(user_problem: str, author_name: str):
 
     return f"{intro}\n\n{body}\n\n{cta}"
 
+@mcp.tool()
+def read_issue_details(owner: str, repo: str, issue_number: int):
+    """
+    Fetches the full body and all comments of a specific GitHub issue.
+    Use this to understand the full context before generating a reply.
+    """
+    # 1. Get the main issue body
+    issue_url = f"https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}"
+    # 2. Get the comments
+    comments_url = f"https://api.github.com/repos/{owner}/{repo}/issues/{issue_number}/comments"
+
+    headers = {"Accept": "application/vnd.github.v3+json"}
+
+    try:
+        issue_res = requests.get(issue_url, headers=headers).json()
+        comments_res = requests.get(comments_url, headers=headers).json()
+
+        full_text = f"TITLE: {issue_res.get('title')}\n"
+        full_text += f"BODY: {issue_res.get('body')}\n\n"
+        full_text += "--- COMMENTS ---\n"
+
+        for c in comments_res:
+            full_text += f"{c['user']['login']}: {c['body']}\n\n"
+
+        return full_text
+    except Exception as e:
+        return f"Error fetching details: {str(e)}"
+
 # --- RUN AS SSE SERVER ---
 if __name__ == "__main__":
     # This forces the server to listen on port 8000 instead of stdio
