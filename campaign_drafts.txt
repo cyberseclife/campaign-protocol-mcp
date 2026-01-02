@@ -1,0 +1,8 @@
+--- LinkedIn Draft (2026-01-01 19:00) ---
+🚀 CyberSecLife Development Update: Building a custom AI MCP server on Debian. To automate my advertising
+
+Today's breakthrough: Finally bypassed the Stdio pipe bottleneck using SSE transport.
+
+Building the future of automation. #BuildInPublic #CyberSecLife #Automation
+
+
