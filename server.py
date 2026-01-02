@@ -54,28 +54,26 @@ def search_github_issues(keyword: str, limit: int = 5):
 
 # --- 3. THE STRATEGIST (Writer) ---
 @mcp.tool()
-def generate_strategy_reply(user_problem: str, author_name: str):
+def generate_strategy_reply(user_problem: str, author_name: str, technical_insight: str):
     """
-    Auto-generates a technical marketing reply representing CyberSecLife Development.
+    Generates a TAILORED marketing reply.
+    technical_insight: The specific fix or observation (e.g., 'Electron beforeQuit race condition').
     """
-    # Load Identity
     persona = get_persona()
     company = persona.get("brand_name", "CyberSecLife Development")
     product = persona.get("product_name", "Campaign-Protocol-MCP")
-    link = persona.get("github_repo", "https://github.com/YOUR_USERNAME/campaign-protocol-mcp")
+    link = persona.get("github_repo", "https://github.com/cyberseclife/campaign-protocol-mcp")
 
-    # The Hook
-    intro = f"@{author_name} saw you were hitting a wall with {user_problem[:30]}..."
+    intro = f"@{author_name} saw you were hitting a wall with {user_problem[:50]}..."
 
-    # The Authority (Company Voice)
+    # We use the technical_insight parameter to make it unique and relevant
     body = (
-        f"We ran into this exact bottleneck at **{company}** while engineering the {product} backend. "
-        "The standard libraries struggle with raw streams in that context. "
-        "Our fix was to bypass the agent's default parser entirely."
+        f"We actually investigated a similar {technical_insight} over at **{company}** "
+        f"while stress-testing the {product} lifecycle. It’s a nasty bottleneck, "
+        "especially when async cleanup handlers don't signal the parent process correctly."
     )
 
-    # The Solution (Drive to Repo)
-    cta = f"We open-sourced that architecture in the {product} repo if you want to see how we handled it: {link}"
+    cta = f"We documented our signal-handling patterns in the {product} repo if you want to compare notes: {link}"
 
     return f"{intro}\n\n{body}\n\n{cta}"
 
