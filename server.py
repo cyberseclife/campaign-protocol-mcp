@@ -52,30 +52,39 @@ def search_github_issues(keyword: str, limit: int = 5):
     except Exception as e:
         return f"Error searching GitHub: {str(e)}"
 
-# --- 3. THE STRATEGIST (Writer) ---
 @mcp.tool()
-def generate_strategy_reply(user_problem: str, author_name: str, technical_insight: str):
+def generate_strategy_reply(user_problem: str, author_name: str, technical_insight: str, proposed_solution: str, project_tag: str = None):
     """
-    Generates a TAILORED marketing reply.
-    technical_insight: The specific fix or observation (e.g., 'Electron beforeQuit race condition').
+    Generates a helpful reply. Only mentions a project if a relevant tag is provided.
+    Otherwise, provides a pure 'Help-First' technical response.
     """
     persona = get_persona()
     company = persona.get("brand_name", "CyberSecLife Development")
-    product = persona.get("product_name", "Campaign-Protocol-MCP")
-    link = persona.get("github_repo", "https://github.com/cyberseclife/campaign-protocol-mcp")
+    projects = persona.get("projects", [])
+
+    # Try to find a project that actually matches the technical context
+    selected_project = next((p for p in projects if project_tag and project_tag in p.get('tag', '')), None)
 
     intro = f"@{author_name} saw you were hitting a wall with {user_problem[:50]}..."
 
-    # We use the technical_insight parameter to make it unique and relevant
-    body = (
-        f"We actually investigated a similar {technical_insight} over at **{company}** "
-        f"while stress-testing the {product} lifecycle. It’s a nasty bottleneck, "
-        "especially when async cleanup handlers don't signal the parent process correctly."
-    )
+    # Logic Gate: If we have a matching project, mention it. If not, don't lie.
+    if selected_project:
+        body = (
+            f"We ran into this exact behavior at **{company}** while building {selected_project['name']}. "
+            f"It's a known pain point when {selected_project['description']}."
+        )
+        cta = f"We handled the implementation details here if it helps your research: {selected_project['url']}"
+    else:
+        # PURE HELP MODE: No advertising, just building brand authority through expertise
+        body = (
+            f"I've been looking into similar {technical_insight} issues recently. "
+            "It usually stems from the way the host environment handles async cleanup cycles."
+        )
+        cta = f"Hope the solution below helps get this cleared up!"
 
-    cta = f"We documented our signal-handling patterns in the {product} repo if you want to compare notes: {link}"
+    help_section = f"**Head-on Solution:**\n{proposed_solution}"
 
-    return f"{intro}\n\n{body}\n\n{cta}"
+    return f"{intro}\n\n{body}\n\n{help_section}\n\n{cta}"
 
 @mcp.tool()
 def read_issue_details(owner: str, repo: str, issue_number: int):
