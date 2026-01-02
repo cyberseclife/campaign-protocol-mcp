@@ -1,48 +1,48 @@
-# 📡 Campaign Protocol MCP
+## 🛠️ Installation & Setup
 
-**Automated Advertising Intelligence for Model Context Protocol Agents.**
+Follow this 3-step launch sequence to get your AI Hunter online.
 
-> *Building the bridge between "Building in Public" and "Automated Marketing".*
+### 1. Environment Setup
+Clone the repo and install the core protocol handlers.
 
-![Status](https://img.shields.io/badge/Status-v2.0_Beta-green) ![Python](https://img.shields.io/badge/Built_With-FastMCP-blue)
-
-## 🎯 Mission
-**Campaign Protocol** is a specialized MCP Server designed to give AI Agents "Hunter" capabilities. It allows an LLM to actively search the open web (GitHub, StackExchange) for relevant technical discussions, analyze user problems, and draft high-value strategic replies that subtly promote your solution.
-
-It is currently being built live as part of the **CyberSecLife Origin Hunter** project.
-
-## ⚡ Capabilities (v2.0)
-
-### 1. The Scout (`search_for_conversations`)
-* **Function:** Connects to GitHub & StackExchange APIs.
-* **Action:** Finds real-time issues and questions matching your niche keywords (e.g., "MCP server error", "python automation").
-* **Bypass:** Uses direct API uplinks to avoid search engine anti-bot blocking.
-
-### 2. The Deep Scan (`read_github_issue`)
-* **Function:** Retrieving full issue context.
-* **Action:** Reads the body of user complaints to understand the *exact* pain point, allowing for specific, non-spammy solutions.
-
-### 3. The Ghost Writer (`generate_strategy_reply`)
-* **Function:** Context-aware copywriting.
-* **Action:** Takes a user's problem and your `persona.json` settings to auto-draft a helpful, technical response that links to your product.
-
----
-
-## 🛠️ Installation
-
-### Prerequisites
-* Python 3.10+
-* `uv` or `pip`
-
-### Setup
 ```bash
 # Clone the protocol
-git clone [https://github.com/YOUR_USERNAME/campaign-protocol-mcp.git](https://github.com/YOUR_USERNAME/campaign-protocol-mcp.git)
+git clone [https://github.com/cyberseclife/campaign-protocol-mcp.git](https://github.com/cyberseclife/campaign-protocol-mcp.git)
 cd campaign-protocol-mcp
 
-# Create environment
+# Create and activate environment
 python3 -m venv venv
 source venv/bin/activate
 
 # Install dependencies
 pip install "mcp[cli]" fastmcp requests
+```
+
+### 2. Configure your Persona
+Open `persona.json` and define your brand. This is the **Identity** your AI agent will use when drafting replies and social posts.
+
+### 3. Activate the Agent (The Most Important Step)
+To let your AI Agent (Gemini, Claude, etc.) use these tools, you must link this server to your agent's configuration file.
+
+#### **For Gemini CLI users:**
+Edit `~/.gemini/settings.json` and add:
+
+```json
+"cyberseclife-dev": {
+  "command": "python3",
+  "args": ["/absolute/path/to/campaign-protocol-mcp/server.py"],
+  "env": { "PYTHONPATH": "/absolute/path/to/campaign-protocol-mcp" }
+}
+```
+
+#### **For Claude Desktop users:**
+Edit `~/Library/Application Support/Claude/claude_desktop_config.json` and add:
+
+```json
+"mcpServers": {
+  "cyberseclife-dev": {
+    "command": "python3",
+    "args": ["/absolute/path/to/campaign-protocol-mcp/server.py"]
+  }
+}
+```
